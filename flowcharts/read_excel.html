@@ -1,0 +1,78 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse(
+        "st3=>start: start read_excel_to_sqlite\n" +
+        "io5=>inputoutput: input:\n" +
+        "op8=>operation: Parses ini style properties file to read Do_Org_Linked and Do Target-Master\n" +
+        "spreadsheets into dataframes and commits them to SQLite instance.\n" +
+        "op10=>operation: sections = config.sections()\n" +
+        "cond13=>condition: for section in sections\n" +
+        "op44=>operation: xcel_files = config.items(section)\n" +
+        "cond47=>condition: for xcel_file in xcel_files\n" +
+        "op60=>operation: (key, path) = xcel_file\n" +
+        "op62=>operation: (file_name, tab) = key.split('.')\n" +
+        "op64=>operation: df = pd.read_excel(path, sheet_name=tab)\n" +
+        "sub66=>subroutine: df.to_sql(file_name, sqlite_con, if_exists='replace', index=False)\n" +
+        "e72=>end: end read_excel_to_sqlite\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->cond13\n" +
+        "cond13(yes)->op44\n" +
+        "op44->cond47\n" +
+        "cond47(yes)->op60\n" +
+        "op60->op62\n" +
+        "op62->op64\n" +
+        "op64->sub66\n" +
+        "sub66(left)->cond47\n" +
+        "cond47(no)->cond13\n" +
+        "cond13(no)->e72\n"
+    );
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 10,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

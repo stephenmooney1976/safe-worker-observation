@@ -1,0 +1,73 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse("st3=>start: start main_wrapper\n" +
+        "io5=>inputoutput: input: \n" +
+        "op8=>operation: Execution of main is nested in try block that logs run and elapsed time to execution_log.txt.\n" +
+        "Except block catches all exceptions and logs to error_log.txt\n" +
+        "Finally block performs clean up of gracefully closing any open database connections.\n" +
+        "op10=>operation: try:\n" +
+        "    start = time.perf_counter()\n" +
+        "    main()\n" +
+        "    end = time.perf_counter()\n" +
+        "    elapsed = round((end - start), 2)\n" +
+        "    execution_logger.info(f'''Elapsed Time: {elapsed} seconds" +
+        "{('=' * 120)}''')\n" +
+        "except Exception as e:\n" +
+        "    error_logger.exception('Exception Raised', exc_info=e)\n" +
+        "    sys.exit(f'Program Failed: {e}')\n" +
+        "finally:\n" +
+        "    sqlite_con.close()\n" +
+        "    xdo_con.close()\n" +
+        "e12=>end: end main_wrapper\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->e12\n");
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 10,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

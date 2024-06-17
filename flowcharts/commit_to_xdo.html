@@ -1,0 +1,96 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse(
+        "st3=>start: start commit_to_xdo\n" +
+        "io5=>inputoutput: input: df_week\n" +
+        "op8=>operation: Receives final dataframes for all three weeks.\n" +
+        "Writes current record count to ComplianceHistory table in SQLite file on disk.\n" +
+        "Deletes existing records and writes updated ones to XDO.SWO_COMPLIANCE table on dv46.\n" +
+        "op10=>operation: xdo_sql_str = insert into XDO.SWO_COMPLIANCE VALUES(\n" +
+        ":1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17)\n" +
+        "op12=>operation: week_list = df_week.values.tolist()\n" +
+        "op14=>operation: period = df_week.iloc[0].Period\n" +
+        "cond17=>condition: for (i, row) in enumerate(week_list)\n" +
+        "cond52=>condition: if (i == 0)\n" +
+        "op56=>operation: del_sql_str = f\"delete from SWO_COMPLIANCE WHERE PERIOD like '{period}'\"\n" +
+        "sub58=>subroutine: xdo_cur.execute(del_sql_str)\n" +
+        "op60=>operation: delete_count = xdo_cur.execute(\n" +
+        "f\"select COUNT(*) from SWO_COMPLIANCE WHERE PERIOD like '{period}'\"\n" +
+        ").fetchone()[0]\n" +
+        "cond63=>operation: raise OracleDeletionException(f'Current Count: {delete_count} | Expected Count: 0') if  (delete_count != 0)\n" +
+        "sub73=>subroutine: execution_logger.info(f'Post Delete | {delete_count:3} rows | {period}')\n" +
+        "sub78=>subroutine: xdo_cur.execute(xdo_sql_str, row)\n" +
+        "op82=>operation: commit_count = xdo_cur.execute(\n" +
+        "f\"select COUNT(*) from SWO_COMPLIANCE WHERE PERIOD like '{period}'\"\n" +
+        ").fetchone()[0]\n" +
+        "sub84=>subroutine: xdo_con.commit()\n" +
+        "io89=>inputoutput: output:  (commit_count, period)\n" +
+        "e87=>end: end function return\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->op12\n" +
+        "op12->op14\n" +
+        "op14->cond17\n" +
+        "cond17(yes)->cond52\n" +
+        "cond52(yes)->op56\n" +
+        "op56->sub58\n" +
+        "sub58->op60\n" +
+        "op60->cond63\n" +
+        "cond63->sub73\n" +
+        "sub73->sub78\n" +
+        "sub78(left)->cond17\n" +
+        "cond52(no)->sub78\n" +
+        "cond17(no)->op82\n" +
+        "op82->sub84\n" +
+        "sub84->io89\n" +
+        "io89->e87\n"
+    );
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 5,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

@@ -1,0 +1,104 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse(
+        "st3=>start: start df_to_sqlite\n" +
+        "io5=>inputoutput: input: api_dic\n" +
+        "op8=>operation: Parses api_dic and transforms all nine dataframes before writing to in memory SQLite instance.\n" +
+        "op10=>operation: conv_dic = {'Sap ID': int, 'Completed': int, 'Expected': int, 'Leader Compliance': int}\n" +
+        "cond13=>condition: for (week, inner_dic) in api_dic.items()\n" +
+        "op58=>operation: tmp_df = inner_dic['compliance_df'].copy()\n" +
+        "op60=>operation: indexes = tmp_df[tmp_df['Sap ID'].isnull()].index\n" +
+        "sub62=>subroutine: tmp_df.drop(indexes, inplace=True)\n" +
+        "sub64=>subroutine: tmp_df.drop('Expected Observations Per Week', axis=1, inplace=True)\n" +
+        "sub66=>subroutine: tmp_df.rename(columns={tmp_df.columns[6]: 'UNKNOWN'}, inplace=True)\n" +
+        "sub68=>subroutine: tmp_df.rename(columns={'Actual Weeks Compliant': 'Completed'}, inplace=True)\n" +
+        "sub70=>subroutine: tmp_df.rename(columns={'Expected Weeks Compliant': 'Expected'}, inplace=True)\n" +
+        "sub72=>subroutine: tmp_df.insert(7, 'Period', inner_dic['period_str'], allow_duplicates=True)\n" +
+        "op74=>operation: tmp_df.loc[(((tmp_df['Leader Compliance'] == 'Indeterminate') | (tmp_df['Leader Compliance'] == '0%')), 'Leader Compliance')] = '0'\n" +
+        "op76=>operation: tmp_df.loc[((tmp_df['Leader Compliance'] == '100%'), 'Leader Compliance')] = '1'\n" +
+        "op78=>operation: comp_df = tmp_df.astype(conv_dic)\n" +
+        "op80=>operation: comp_len = len(comp_df)\n" +
+        "op82=>operation: pair_df = inner_dic['paired_df'].iloc[(:, 0:19)]\n" +
+        "op84=>operation: pan_df = inner_dic['pandemic_df'].iloc[(:, 0:19)]\n" +
+        "op86=>operation: record = (comp_len, dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), inner_dic['period_str'])\n" +
+        "sub88=>subroutine: sqlite_file_cur.execute('INSERT INTO ComplianceHistory VALUES (?, ?, ?);', record)\n" +
+        "sub90=>subroutine: sqlite_file_con.commit()\n" +
+        "sub92=>subroutine: comp_df.to_sql(f'Compliance{week}', sqlite_con, if_exists='replace', index=False)\n" +
+        "sub94=>subroutine: pair_df.to_sql(f'Paired{week}', sqlite_con, if_exists='replace', index=False)\n" +
+        "sub96=>subroutine: pan_df.to_sql(f'Pandemic{week}', sqlite_con, if_exists='replace', index=False)\n" +
+        "e100=>end: end df_to_sqlite\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->cond13\n" +
+        "cond13(yes)->op58\n" +
+        "op58->op60\n" +
+        "op60->sub62\n" +
+        "sub62->sub64\n" +
+        "sub64->sub66\n" +
+        "sub66->sub68\n" +
+        "sub68->sub70\n" +
+        "sub70->sub72\n" +
+        "sub72->op74\n" +
+        "op74->op76\n" +
+        "op76->op78\n" +
+        "op78->op80\n" +
+        "op80->op82\n" +
+        "op82->op84\n" +
+        "op84->op86\n" +
+        "op86->sub88\n" +
+        "sub88->sub90\n" +
+        "sub90->sub92\n" +
+        "sub92->sub94\n" +
+        "sub94->sub96\n" +
+        "sub96(left)->cond13\n" +
+        "cond13(no)->e100\n"
+    );
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 10,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

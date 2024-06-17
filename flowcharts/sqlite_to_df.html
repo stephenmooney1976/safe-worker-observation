@@ -1,0 +1,85 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse(
+        "st3=>start: start sqlite_to_df\n" +
+        "io5=>inputoutput: input: week\n" +
+        "op8=>operation: Queries in memory SQLite tables to coalesce and aggregate SWO data into three dataframes.\n" +
+        "op10=>operation: qryselect = f'qrySelect{week}'\n" +
+        "op12=>operation: qryappend = f'qryAppend{week}'\n" +
+        "op14=>operation: compliancetable = f'Compliance{week}'\n" +
+        "op16=>operation: pairedtable = f'Paired{week}'\n" +
+        "op18=>operation: pandemictable = f'Pandemic{week}'\n" +
+        // "op20=>operation: sql_select_str = f''' '''\n" +
+        // "op22=>operation: sql_append_str = f''' '''\n" +
+        "op20=>operation: df_select = pd.DataFrame(sqlite_cur.execute(sql_select_str), columns=[c[0] for c in sqlite_cur.description])\n" +
+        "sub26=>subroutine: df_select.to_sql(qryselect, sqlite_con, if_exists='replace', index=False)\n" +
+        "op28=>operation: df_append = pd.DataFrame(sqlite_cur.execute(sql_append_str), columns=[c[0] for c in sqlite_cur.description])\n" +
+        "sub30=>subroutine: df_append.to_sql(qryappend, sqlite_con, if_exists='replace', index=False)\n" +
+        "op32=>operation: final_df = df_append.replace(np.nan, None)\n" +
+        "io37=>inputoutput: output:  final_df\n" +
+        "e35=>end: end function return\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->op12\n" +
+        "op12->op14\n" +
+        "op14->op16\n" +
+        "op16->op18\n" +
+        "op18->op20\n" +
+        // "op20->op22\n" +
+        // "op22->op24\n" +
+        "op20->sub26\n" +
+        "sub26->op28\n" +
+        "op28->sub30\n" +
+        "sub30->op32\n" +
+        "op32->io37\n" +
+        "io37->e35\n"
+    );
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 20,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

@@ -1,0 +1,21 @@
+[OrganizationName] # all of this to return empty string if no match is found
+=IF(
+    ISERROR(                                                                                                         --|
+        VLOOKUP(C2,'DO_ORG (2)'!C:K,9,FALSE) # look for exact user ID in 2nd tab, return Org Name                      |-- logic test of IF
+           ), "", # return empty string if vlookup returns false                                                     --|
+    IF(                                                           --|
+        ISBLANK(                                                    |-- returned if true
+            VLOOKUP(C2,'DO_ORG (2)'!C:K,9,FALSE) #                  |
+               ), "",                                             --|
+    VLOOKUP(C2,'DO_ORG (2)'!C:K,9,FALSE)))                        ----- returned if false
+========================================================================================================================
+[Level2Supv]
+=IF(
+    N2="",                                                 # logical test
+    IF(
+        $A2=VALUE(MID(M$1,6,1)),     # logical test  --|                        # abs val of A2 (Level 1) =
+            VLOOKUP(K2,C:K,3,FALSE), # if true         |-- # if true
+            ""                       # if false      --|
+      ),
+            VLOOKUP(VLOOKUP(N2,E:K,7,FALSE),C:K,3,FALSE)   # if false
+   )

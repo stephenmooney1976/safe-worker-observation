@@ -1,0 +1,11 @@
+# data source is DO_Org_Flat_Download.xls
+
+[col K: QTYName]
+=IF(
+    D2=D1,K1+1,1)
+
+[col L: Dup]
+=IF(OR(D2=D1,D2=D3),"Y","N")
+
+[col M: Name2]
+=IF(L2="N",D2,CONCATENATE(D2,K2))

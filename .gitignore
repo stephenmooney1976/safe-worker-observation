@@ -1,0 +1,12 @@
+.idea
+__pycache__
+venv
+sql
+data/csv
+.DS_Store
+*.bin
+credentials.py
+xdo_comparison.py
+*.pkl
+*.pyc
+data/logs

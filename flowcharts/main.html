@@ -1,0 +1,76 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse("" +
+        "st3=>start: start main\n" +
+        "io5=>inputoutput: input: \n" +
+        "op8=>operation: Calls cognition_connection.py and utils.py functions.\n" +
+        "op10=>operation: week_ranges = build_three_week_range()\n" +
+        "sub12=>subroutine: read_excel_to_sqlite()\n" +
+        "op14=>operation: api_res_dic = get_api_responses(week_dic=week_ranges)\n" +
+        "sub16=>subroutine: df_to_sqlite(api_dic=api_res_dic)\n" +
+        "cond19=>condition: for week in WEEK_LIST\n" +
+        "op30=>operation: final_df = sqlite_to_df(week)\n" +
+        "op32=>operation: (num_rows, period) = commit_to_xdo(df_week=final_df)\n" +
+        "sub34=>subroutine: execution_logger.info(f'Post Commit | {num_rows:3} rows | {period}')\n" +
+        "e38=>end: end main\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->sub12\n" +
+        "sub12->op14\n" +
+        "op14->sub16\n" +
+        "sub16->cond19\n" +
+        "cond19(yes)->op30\n" +
+        "op30->op32\n" +
+        "op32->sub34\n" +
+        "sub34(left)->cond19\n" +
+        "cond19(no)->e38" +
+        "");
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 10,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

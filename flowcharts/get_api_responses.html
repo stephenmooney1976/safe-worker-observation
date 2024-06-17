@@ -1,0 +1,110 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse(
+        "st3=>start: start get_api_responses\n" +
+        "io5=>inputoutput: input: week_dic\n" +
+        "op8=>operation: Initiate GET requests with cognition api's to retrieve SWO data for three weeks.\n" +
+        "Updates and returns week_dic with nine dataframes total.\n" +
+        "Three dataframes (compliance, paired, pandemic) for each of the three weeks.\n" +
+        "Raises custom exception if record count of compliance download is plus or minus 10% of previous count.\n" +
+        "op10=>operation: persistence = msal_persistence('token_cache.bin')\n" +
+        "op12=>operation: cache = PersistedTokenCache(persistence)\n" +
+        "op14=>operation: app = msal.ConfidentialClientApplication(client_id=credentials.CLIENT_ID, authority=LOGIN_AUTHORITY, token_cache=cache, client_credential=credentials.SECRET)\n" +
+        "op16=>operation: res = app.acquire_token_by_username_password(username=credentials.USERNAME, password=credentials.PASSWORD, scopes=[f'api://{credentials.SWO_CLIENT_ID}/.default'])\n" +
+        "op18=>operation: headers = {'Authorization': f\"Bearer {res['access_token']}\", 'Content-Type': 'application/json'}\n" +
+        "cond21=>condition: for (week, inner_dic) in week_dic.items()\n" +
+        "op110=>operation: start = inner_dic['start_api_str']\n" +
+        "op112=>operation: end = inner_dic['end_api_str']\n" +
+        "op114=>operation: api_dict = {\n" +
+        "'compliance': {'url': f'https://cognition.dteenergy.com/api/v1/reports/responses/export/leader-compliance?azureId=c21b67de-187e-4bab-8876-36994b951dc7&endDate={end}&startDate={start}'},\n" +
+        "'paired': {'url': f'https://cognition.dteenergy.com/api/v1/reports/responses/export/epo/single-line?azureId=c21b67de-187e-4bab-8876-36994b951dc7&endDate={end}&observationType=employee-performing-observation&questionnaireId=5&startDate={start}'},\n" +
+        "'pandemic': {'url': f'https://cognition.dteenergy.com/api/v1/reports/responses/export/epo/single-line?azureId=c21b67de-187e-4bab-8876-36994b951dc7&endDate={end}&observationType=employee-performing-observation&questionnaireId=11&startDate={start}'}}\n" +
+        "cond117=>condition: for (api, dic) in api_dict.items()\n" +
+        "op157=>operation: api_response = requests.get(dic['url'], headers=headers)\n" +
+        "op159=>operation: api_text = api_response.text\n" +
+        "op161=>operation: json_obj = json.loads(api_text)\n" +
+        "op163=>operation: df = pd.read_csv(json_obj['url'])\n" +
+        "cond166=>condition: if (api == 'compliance')\n" +
+        "op170=>operation: prev_count = sqlite_file_cur.execute('SELECT Record_Count FROM ComplianceHistory ORDER BY Date_Time DESC').fetchone()[0]\n" +
+        "op172=>operation: current_count = len(df.index)\n" +
+        "op174=>operation: diff = abs(((prev_count - current_count) / float(prev_count)))\n" +
+        "cond177=>operation: raise ComplianceDownloadException(f'Current Count: {current_count} | Previous Count: {prev_count} | Difference: {round((diff * 100), 2)}%') if  (diff > 0.1)\n" +
+        "op190=>operation: inner_dic['_'.join([api, 'df'])] = df\n" +
+        "io199=>inputoutput: output:  week_dic\n" +
+        "e197=>end: end function return\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->op12\n" +
+        "op12->op14\n" +
+        "op14->op16\n" +
+        "op16->op18\n" +
+        "op18->cond21\n" +
+        "cond21(yes)->op110\n" +
+        "op110->op112\n" +
+        "op112->op114\n" +
+        "op114->cond117\n" +
+        "cond117(yes)->op157\n" +
+        "op157->op159\n" +
+        "op159->op161\n" +
+        "op161->op163\n" +
+        "op163->cond166\n" +
+        "cond166(yes)->op170\n" +
+        "op170->op172\n" +
+        "op172->op174\n" +
+        "op174->cond177\n" +
+        "cond177->op190\n" +
+        "op190(left)->cond117\n" +
+        "cond166(no)->op190\n" +
+        "cond117(no)->cond21\n" +
+        "cond21(no)->io199\n" +
+        "io199->e197\n"
+    );
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 5,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>

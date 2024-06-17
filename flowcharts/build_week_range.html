@@ -1,0 +1,79 @@
+<script src="./raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"
+        integrity="sha512-emJotoOTtLFZ0H1ruR4v5pqW1mSen/JQCnjD4mcXwDT1sfZQmtqUDYv36X2S/iSun0kpgvvmBUWqpAupN104Kw=="
+        crossOrigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="diagram"></div>
+<script>
+    const diagram = flowchart.parse("st3=>start: start build_three_week_range\n" +
+        "io5=>inputoutput: input: \n" +
+        "op8=>operation: Builds ranges for current week and previous two.\n" +
+        "Weeks start on Monday and end on Sunday.\n" +
+        "op10=>operation: today = pd.Timestamp.today().date()\n" +
+        "op12=>operation: date_dict = dict()\n" +
+        "cond15=>condition: for (i, week) in enumerate(WEEK_LIST)\n" +
+        "op30=>operation: mon_dt = (today - dt.timedelta(days=(today.weekday() + (i * 7))))\n" +
+        "op32=>operation: sun_dt = (mon_dt + dt.timedelta(days=6))\n" +
+        "op34=>operation: mon_str = '{d.month}/{d.day}/{d.year}'.format(d=mon_dt)\n" +
+        "op36=>operation: sun_str = '{d.month}/{d.day}/{d.year}'.format(d=sun_dt)\n" +
+        "op38=>operation: date_dict[week] = dict(\nstart_dt=mon_dt, end_dt=sun_dt, start_str=mon_str,\n end_str" +
+        "=sun_str, period_str=f'{mon_str} - {sun_str}',\n start_api_str=mon_dt.strftime('%Y-%m-%d'),\n end_api_" +
+        "str=sun_dt.strftime('%Y-%m-%d'))\n" +
+        "io45=>inputoutput: output:  date_dict\n" +
+        "e43=>end: end function return\n" +
+        "\n" +
+        "st3->io5\n" +
+        "io5->op8\n" +
+        "op8->op10\n" +
+        "op10->op12\n" +
+        "op12->cond15\n" +
+        "cond15(yes)->op30\n" +
+        "op30->op32\n" +
+        "op32->op34\n" +
+        "op34->op36\n" +
+        "op36->op38\n" +
+        "op38(left)->cond15\n" +
+        "cond15(no)->io45\n" +
+        "io45->e43\n");
+    diagram.drawSVG('diagram');
+
+    // you can also try to pass options:
+
+    diagram.drawSVG('diagram', {
+        'x': 50,
+        'y': 0,
+        'line-width': 3,
+        'line-length': 5,
+        'text-margin': 10,
+        'font-size': 20,
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        // style symbol types
+        'symbols': {
+            'start': {
+                'font-color': 'red',
+                'element-color': 'green',
+                'fill': 'yellow'
+            },
+            'end': {
+                'class': 'end-element'
+            }
+        },
+        // even flowstate support ;-)
+        'flowstate': {
+            'past': {'fill': '#CCCCCC', 'font-size': 12},
+            'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+            'future': {'fill': '#FFFF99'},
+            'request': {'fill': 'blue'},
+            'invalid': {'fill': '#444444'},
+            'approved': {'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a'},
+            'rejected': {'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED'}
+        }
+    });
+</script>
